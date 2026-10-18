@@ -11,9 +11,27 @@ function showMessage(text, isError = false) {
     messageEl.textContent = text;
     messageEl.className = isError ? 'error' : 'success';
 }
+async function loadSummary() {
+    const res = await fetch('php/get_summary.php');
+    const rows = await res.json();
+    const body = document.getElementById('summary-body');
+    body.innerHTML = '';
+
+    rows.forEach(r => {
+        const tr = document.createElement('tr');
+        [r.student_number, r.full_name, r.present, r.late, r.absent, r.percentage + '%']
+            .forEach(value => {
+                const td = document.createElement('td');
+                td.textContent = value;
+                tr.appendChild(td);
+            });
+        body.appendChild(tr);
+    });
+}
 
 // 1. Load students + their status for the selected date
 async function loadAttendance() {
+    loadSummary();
     const res = await fetch('php/get_attendance.php?date=' + dateInput.value);
     const students = await res.json();
 
@@ -114,11 +132,19 @@ saveBtn.addEventListener('click', async () => {
 
     if (res.ok) {
         showMessage('Attendance saved for ' + dateInput.value + '.');
+        loadSummary();
     } else {
         showMessage(data.error, true);
     }
 });
-
+document.getElementById('search').addEventListener('input', function () {
+    const term = this.value.toLowerCase();
+    tableBody.querySelectorAll('tr').forEach(row => {
+        const text = Array.from(row.cells).slice(0, 2)
+            .map(c => c.textContent).join(' ').toLowerCase();
+        row.style.display = text.includes(term) ? '' : 'none';
+    });
+});
 // 5. Reload when the date changes, and on first page load
 dateInput.addEventListener('change', loadAttendance);
 loadAttendance();
