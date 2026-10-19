@@ -7,7 +7,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 $date    = $data['date'] ?? '';
 $records = $data['records'] ?? [];
-$allowed = ['Present', 'Absent', 'Late'];
+$allowed = ['Present', 'Absent', 'Late', 'Excused'];
 
 if ($date === '' || !is_array($records)) {
     http_response_code(400);

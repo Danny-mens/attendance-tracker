@@ -52,7 +52,7 @@ function statusCell(student) {
     const group = document.createElement('div');
     group.className = 'status-options';
 
-    ['Present', 'Absent', 'Late'].forEach(value => {
+   ['Present', 'Absent', 'Late', 'Excused'].forEach(value =>  {
         const label = document.createElement('label');
         label.className = 'status-option status-' + value.toLowerCase();
         if (student.status === value) label.classList.add('selected');
@@ -132,7 +132,7 @@ async function loadSummary() {
         badge.textContent = pct + '%';
         rate.appendChild(badge);
 
-        tr.append(personCell(r.full_name, r.student_number), makeCell(r.present), makeCell(r.late), makeCell(r.absent), rate);
+       tr.append(personCell(r.full_name, r.student_number), makeCell(r.present), makeCell(r.late), makeCell(r.absent), makeCell(r.excused), rate);
         summaryBody.appendChild(tr);
     });
 }
