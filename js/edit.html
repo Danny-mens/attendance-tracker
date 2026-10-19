@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit student · AttendEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="attendance" data-title="Edit student">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">STUDENT RECORD</p>
+                    <h1>Edit student</h1>
+                    <p class="muted">Update the student's details and class.</p>
+                </div>
+            </div>
+
+            <div id="message" hidden></div>
+
+            <section class="panel form-panel">
+                <form id="edit-form">
+                    <div class="form-grid">
+                        <div>
+                            <label for="student-number">Student ID</label>
+                            <input class="input" id="student-number" required>
+                        </div>
+                        <div>
+                            <label for="full-name">Full name</label>
+                            <input class="input" id="full-name" required>
+                        </div>
+                        <div>
+                            <label for="class-id">Class</label>
+                            <select class="input" id="class-id">
+                                <option value="">No class</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <a class="btn btn-secondary" href="index.html">Cancel</a>
+                        <button class="btn btn-primary" type="submit">Save changes</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/edit.js"></script>
+</body>
+</html>

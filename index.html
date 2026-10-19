@@ -23,6 +23,9 @@
                 <form id="student-form" class="filters">
                     <input class="input" type="text" id="student-number" placeholder="Student ID" required>
                     <input class="input" type="text" id="full-name" placeholder="Full name" required>
+                    <select class="input" id="class-id">
+    <option value="">No class</option>
+</select>
                     <button class="btn btn-primary" type="submit">＋ Add student</button>
                 </form>
             </section>
@@ -37,6 +40,12 @@
                         <label for="search">Search</label>
                         <input class="input" type="text" id="search" placeholder="Search name or student ID…">
                     </div>
+                    <div class="filter-field">
+    <label for="class-filter">Class</label>
+    <select class="input" id="class-filter">
+        <option value="0">All classes</option>
+    </select>
+</div>
                 </div>
 
                 <div class="attendance-toolbar">
@@ -47,8 +56,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                           <tr><th>STUDENT</th><th>PRESENT</th><th>LATE</th><th>ABSENT</th><th>EXCUSED</th><th>RATE</th></tr>
-                        </thead>
+                           <tr><th>STUDENT</th><th>CLASS</th><th>ATTENDANCE STATUS</th><th>ACTIONS</th></tr>
                         <tbody id="attendance-body"></tbody>
                     </table>
                 </div>

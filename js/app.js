@@ -7,6 +7,9 @@ const countEl     = document.getElementById('count');
 const saveBtn     = document.getElementById('save-btn');
 const markAllBtn  = document.getElementById('mark-all');
 const messageEl   = document.getElementById('message');
+const classSelect = document.getElementById('class-id');
+const classFilter = document.getElementById('class-filter');
+
 
 dateInput.value = new Date().toISOString().split('T')[0];
 
@@ -76,11 +79,24 @@ function statusCell(student) {
     td.appendChild(group);
     return td;
 }
+async function loadClassOptions() {
+    const res = await fetch('php/get_classes.php');
+    const classes = await res.json();
+
+    classes.forEach(c => {
+        [classSelect, classFilter].forEach(select => {
+            const option = document.createElement('option');
+            option.value = c.id;
+            option.textContent = c.class_name;
+            select.appendChild(option);
+        });
+    });
+}
 
 // 1. Load students and their status for the selected date
 async function loadAttendance() {
     loadSummary();
-    const res = await fetch('php/get_attendance.php?date=' + dateInput.value);
+    const res = await fetch('php/get_attendance.php?date=' + dateInput.value + '&class_id=' + classFilter.value);
     const students = await res.json();
 
     tableBody.innerHTML = '';
@@ -88,8 +104,8 @@ async function loadAttendance() {
 
     if (students.length === 0) {
         const tr = document.createElement('tr');
-        const td = makeCell('No students yet. Add one above.');
-        td.colSpan = 3;
+        const td = makeCell('No students found.');
+        td.colSpan = 4;
         td.className = 'empty-state';
         tr.appendChild(td);
         tableBody.appendChild(tr);
@@ -99,23 +115,42 @@ async function loadAttendance() {
     students.forEach(s => {
         const row = document.createElement('tr');
         row.dataset.id = s.id;
-        row.dataset.search = (s.full_name + ' ' + s.student_number).toLowerCase();
+        row.dataset.search = (s.full_name + ' ' + s.student_number + ' ' + (s.class_name || '')).toLowerCase();
+
+        const classCell = document.createElement('td');
+        if (s.class_name) {
+            const badge = document.createElement('span');
+            badge.className = 'badge badge-excused';
+            badge.textContent = s.class_name;
+            classCell.appendChild(badge);
+        } else {
+            classCell.textContent = '—';
+        }
 
         const actionCell = document.createElement('td');
+        const actions = document.createElement('div');
+        actions.className = 'action-row';
+
+        const editLink = document.createElement('a');
+        editLink.href = 'edit.html?id=' + s.id;
+        editLink.className = 'text-link';
+        editLink.textContent = 'Edit';
+
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
         delBtn.className = 'link-danger';
         delBtn.textContent = 'Delete';
         delBtn.addEventListener('click', () => deleteStudent(s.id, s.full_name));
-        actionCell.appendChild(delBtn);
 
-        row.append(personCell(s.full_name, s.student_number), statusCell(s), actionCell);
+        actions.append(editLink, delBtn);
+        actionCell.appendChild(actions);
+
+        row.append(personCell(s.full_name, s.student_number), classCell, statusCell(s), actionCell);
         tableBody.appendChild(row);
     });
 
     applySearch();
 }
-
 // 2. Summary table
 async function loadSummary() {
     const res = await fetch('php/get_summary.php');
@@ -153,10 +188,11 @@ studentForm.addEventListener('submit', async (e) => {
     const res = await fetch('php/add_student.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            student_number: document.getElementById('student-number').value,
-            full_name: document.getElementById('full-name').value
-        })
+       body: JSON.stringify({
+    student_number: document.getElementById('student-number').value,
+    full_name: document.getElementById('full-name').value,
+    class_id: classSelect.value
+})
     });
     const data = await res.json();
 
@@ -221,6 +257,11 @@ saveBtn.addEventListener('click', async () => {
 
 // 8. Start
 dateInput.addEventListener('change', loadAttendance);
+classFilter.addEventListener('change', loadAttendance);
+
 authReady.then(session => {
-    if (session.loggedIn) loadAttendance();
+    if (session.loggedIn) {
+        loadClassOptions();
+        loadAttendance();
+    }
 });
