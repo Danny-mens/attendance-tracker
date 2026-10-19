@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes · AttendEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="classes" data-title="Classes">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">ACADEMIC STRUCTURE</p>
+                    <h1>Classes</h1>
+                    <p class="muted">Create and manage the classes students belong to.</p>
+                </div>
+            </div>
+
+            <div id="message" hidden></div>
+
+            <div class="two-column">
+                <section class="panel form-panel">
+                    <h2 class="section-title">Add class</h2>
+                    <form id="class-form">
+                        <div class="stack">
+                            <label for="class-name">Class name</label>
+                            <input class="input" id="class-name" required placeholder="e.g. Form 2B">
+                        </div>
+                        <div class="stack">
+                            <label for="level">Level (optional)</label>
+                            <input class="input" id="level" placeholder="e.g. Year 2">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit">＋ Add class</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>All classes</h2>
+                            <p class="muted">Students per class are counted automatically</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>CLASS</th><th>LEVEL</th><th>STUDENTS</th><th>ACTIONS</th></tr>
+                            </thead>
+                            <tbody id="class-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/classes.js"></script>
+</body>
+</html>

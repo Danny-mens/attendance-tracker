@@ -1,5 +1,6 @@
 const NAV_LINKS = [
-    { page: 'attendance', href: 'index.html', icon: '✓', label: 'Attendance' }
+    { page: 'attendance', href: 'index.html', icon: '✓', label: 'Attendance' },
+    { page: 'classes', href: 'classes.html', icon: '▤', label: 'Classes' }
 ];
 
 (function () {
