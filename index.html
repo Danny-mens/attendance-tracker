@@ -3,62 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Attendance Tracker</title>
+    <title>Attendance · AttendEase</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <header>
-        <h1>Student Attendance Tracker</h1>
-        <button id="logout-btn">Logout</button>
-    </header>
+<body data-page="attendance" data-title="Attendance">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">DAILY REGISTER</p>
+                    <h1>Take attendance</h1>
+                    <p class="muted">Add students, then mark each one present, absent or late.</p>
+                </div>
+            </div>
 
-    <main>
-        <section class="card">
-            <h2>Add Student</h2>
-            <form id="student-form">
-                <input type="text" id="student-number" placeholder="Student ID" required>
-                <input type="text" id="full-name" placeholder="Full name" required>
+            <section class="panel stack">
+                <h2 class="section-title">Add student</h2>
+                <form id="student-form" class="filters">
+                    <input class="input" type="text" id="student-number" placeholder="Student ID" required>
+                    <input class="input" type="text" id="full-name" placeholder="Full name" required>
+                    <button class="btn btn-primary" type="submit">＋ Add student</button>
+                </form>
+            </section>
 
-                <button type="submit">Add</button>
-            </form>
-        </section>
+            <section class="panel stack">
+                <div class="filters">
+                    <div class="filter-field">
+                        <label for="date">Attendance date</label>
+                        <input class="input" type="date" id="date">
+                    </div>
+                    <div class="filter-field">
+                        <label for="search">Search</label>
+                        <input class="input" type="text" id="search" placeholder="Search name or student ID…">
+                    </div>
+                </div>
 
-        <section class="card">
-            <h2>Mark Attendance</h2>
-            
-            <label for="date">Date:</label>
-            <input type="date" id="date">
-                            <input type="text" id="search" placeholder="Search by name or number...">
+                <div class="attendance-toolbar">
+                    <span class="muted" id="count"></span>
+                    <button class="btn btn-ghost btn-small" id="mark-all" type="button">Mark all present</button>
+                </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="attendance-body"></tbody>
-            </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>STUDENT</th><th>ATTENDANCE STATUS</th><th>ACTIONS</th></tr>
+                        </thead>
+                        <tbody id="attendance-body"></tbody>
+                    </table>
+                </div>
 
-            <button id="save-btn">Save Attendance</button>
-            <p id="message"></p>
-        </section>
-        <section class="card">
-    <h2>Attendance Summary</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Student No.</th><th>Name</th><th>Present</th>
-                <th>Late</th><th>Absent</th><th>Attendance %</th>
-            </tr>
-        </thead>
-        <tbody id="summary-body"></tbody>
-    </table>
-</section>
+                <div class="form-actions">
+                    <span id="message"></span>
+                    <button class="btn btn-primary" id="save-btn" type="button">Save attendance</button>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Attendance summary</h2>
+                        <p class="muted">Totals across all saved dates</p>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>STUDENT</th><th>PRESENT</th><th>LATE</th><th>ABSENT</th><th>RATE</th></tr>
+                        </thead>
+                        <tbody id="summary-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </main>
+</div>
 
-    <script src="js/app.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

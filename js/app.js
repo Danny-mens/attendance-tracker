@@ -1,93 +1,162 @@
-const studentForm  = document.getElementById('student-form');
-const dateInput    = document.getElementById('date');
-const tableBody    = document.getElementById('attendance-body');
-const saveBtn      = document.getElementById('save-btn');
-const messageEl    = document.getElementById('message');
+const studentForm = document.getElementById('student-form');
+const dateInput   = document.getElementById('date');
+const searchInput = document.getElementById('search');
+const tableBody   = document.getElementById('attendance-body');
+const summaryBody = document.getElementById('summary-body');
+const countEl     = document.getElementById('count');
+const saveBtn     = document.getElementById('save-btn');
+const markAllBtn  = document.getElementById('mark-all');
+const messageEl   = document.getElementById('message');
 
-// Set the date picker to today
 dateInput.value = new Date().toISOString().split('T')[0];
 
 function showMessage(text, isError = false) {
     messageEl.textContent = text;
-    messageEl.className = isError ? 'error' : 'success';
+    messageEl.className = isError ? 'msg-error' : 'msg-success';
 }
-async function loadSummary() {
-    const res = await fetch('php/get_summary.php');
-    const rows = await res.json();
-    const body = document.getElementById('summary-body');
-    body.innerHTML = '';
 
-    rows.forEach(r => {
-        const tr = document.createElement('tr');
-        [r.student_number, r.full_name, r.present, r.late, r.absent, r.percentage + '%']
-            .forEach(value => {
-                const td = document.createElement('td');
-                td.textContent = value;
-                tr.appendChild(td);
-            });
-        body.appendChild(tr);
+function initials(name) {
+    const parts = name.trim().split(/\s+/);
+    return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+}
+
+function makeCell(text) {
+    const td = document.createElement('td');
+    td.textContent = text;
+    return td;
+}
+
+function personCell(name, number) {
+    const td = document.createElement('td');
+    const wrap = document.createElement('div');
+    wrap.className = 'person-cell';
+
+    const avatar = document.createElement('span');
+    avatar.className = 'avatar';
+    avatar.textContent = initials(name);
+
+    const text = document.createElement('span');
+    const strong = document.createElement('strong');
+    strong.textContent = name;
+    const small = document.createElement('small');
+    small.textContent = number;
+    text.append(strong, small);
+
+    wrap.append(avatar, text);
+    td.appendChild(wrap);
+    return td;
+}
+
+function statusCell(student) {
+    const td = document.createElement('td');
+    const group = document.createElement('div');
+    group.className = 'status-options';
+
+    ['Present', 'Absent', 'Late'].forEach(value => {
+        const label = document.createElement('label');
+        label.className = 'status-option status-' + value.toLowerCase();
+        if (student.status === value) label.classList.add('selected');
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'status-' + student.id;
+        radio.value = value;
+        radio.checked = student.status === value;
+        radio.addEventListener('change', () => {
+            group.querySelectorAll('.status-option').forEach(el => el.classList.remove('selected'));
+            label.classList.add('selected');
+        });
+
+        const text = document.createElement('span');
+        text.textContent = value;
+        label.append(radio, text);
+        group.appendChild(label);
     });
+
+    td.appendChild(group);
+    return td;
 }
 
-// 1. Load students + their status for the selected date
+// 1. Load students and their status for the selected date
 async function loadAttendance() {
     loadSummary();
     const res = await fetch('php/get_attendance.php?date=' + dateInput.value);
     const students = await res.json();
 
     tableBody.innerHTML = '';
+    countEl.textContent = students.length + ' student(s)';
 
     if (students.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4">No students yet. Add one above.</td></tr>';
+        const tr = document.createElement('tr');
+        const td = makeCell('No students yet. Add one above.');
+        td.colSpan = 3;
+        td.className = 'empty-state';
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
         return;
     }
 
     students.forEach(s => {
         const row = document.createElement('tr');
         row.dataset.id = s.id;
+        row.dataset.search = (s.full_name + ' ' + s.student_number).toLowerCase();
 
-        const numCell = document.createElement('td');
-        numCell.textContent = s.student_number;
-
-        const nameCell = document.createElement('td');
-        nameCell.textContent = s.full_name;
-
-        const statusCell = document.createElement('td');
-        const select = document.createElement('select');
-        ['', 'Present', 'Absent', 'Late'].forEach(opt => {
-            const o = document.createElement('option');
-            o.value = opt;
-            o.textContent = opt === '' ? '-- select --' : opt;
-            if (opt === (s.status || '')) o.selected = true;
-            select.appendChild(o);
-        });
-        statusCell.appendChild(select);
-
-        const delCell = document.createElement('td');
+        const actionCell = document.createElement('td');
         const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'link-danger';
         delBtn.textContent = 'Delete';
-        delBtn.className = 'delete-btn';
         delBtn.addEventListener('click', () => deleteStudent(s.id, s.full_name));
-        delCell.appendChild(delBtn);
+        actionCell.appendChild(delBtn);
 
-        row.append(numCell, nameCell, statusCell, delCell);
+        row.append(personCell(s.full_name, s.student_number), statusCell(s), actionCell);
         tableBody.appendChild(row);
+    });
+
+    applySearch();
+}
+
+// 2. Summary table
+async function loadSummary() {
+    const res = await fetch('php/get_summary.php');
+    const rows = await res.json();
+    summaryBody.innerHTML = '';
+
+    rows.forEach(r => {
+        const tr = document.createElement('tr');
+
+        const rate = document.createElement('td');
+        const badge = document.createElement('span');
+        const pct = Number(r.percentage);
+        badge.className = 'badge ' + (pct >= 80 ? 'badge-present' : pct >= 60 ? 'badge-late' : 'badge-absent');
+        badge.textContent = pct + '%';
+        rate.appendChild(badge);
+
+        tr.append(personCell(r.full_name, r.student_number), makeCell(r.present), makeCell(r.late), makeCell(r.absent), rate);
+        summaryBody.appendChild(tr);
     });
 }
 
-// 2. Add a student
-studentForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); // stop the page from reloading
+// 3. Search
+function applySearch() {
+    const term = searchInput.value.toLowerCase();
+    tableBody.querySelectorAll('tr[data-id]').forEach(row => {
+        row.style.display = row.dataset.search.includes(term) ? '' : 'none';
+    });
+}
+searchInput.addEventListener('input', applySearch);
 
-    const payload = {
-        student_number: document.getElementById('student-number').value,
-        full_name: document.getElementById('full-name').value
-    };
+// 4. Add a student
+studentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
     const res = await fetch('php/add_student.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+            student_number: document.getElementById('student-number').value,
+            full_name: document.getElementById('full-name').value
+        })
     });
     const data = await res.json();
 
@@ -100,7 +169,7 @@ studentForm.addEventListener('submit', async (e) => {
     }
 });
 
-// 3. Delete a student
+// 5. Delete a student
 async function deleteStudent(id, name) {
     if (!confirm('Delete ' + name + ' and all their attendance records?')) return;
 
@@ -113,15 +182,27 @@ async function deleteStudent(id, name) {
     loadAttendance();
 }
 
-// 4. Save attendance
+// 6. Mark all present
+markAllBtn.addEventListener('click', () => {
+    tableBody.querySelectorAll('tr[data-id]').forEach(row => {
+        const radio = row.querySelector('input[value="Present"]');
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change'));
+    });
+});
+
+// 7. Save attendance
 saveBtn.addEventListener('click', async () => {
     const records = [];
-    tableBody.querySelectorAll('tr').forEach(row => {
-        const select = row.querySelector('select');
-        if (select) {
-            records.push({ student_id: row.dataset.id, status: select.value });
-        }
+    tableBody.querySelectorAll('tr[data-id]').forEach(row => {
+        const checked = row.querySelector('input:checked');
+        if (checked) records.push({ student_id: row.dataset.id, status: checked.value });
     });
+
+    if (records.length === 0) {
+        showMessage('Mark at least one student first.', true);
+        return;
+    }
 
     const res = await fetch('php/save_attendance.php', {
         method: 'POST',
@@ -137,29 +218,9 @@ saveBtn.addEventListener('click', async () => {
         showMessage(data.error, true);
     }
 });
-document.getElementById('search').addEventListener('input', function () {
-    const term = this.value.toLowerCase();
-    tableBody.querySelectorAll('tr').forEach(row => {
-        const text = Array.from(row.cells).slice(0, 2)
-            .map(c => c.textContent).join(' ').toLowerCase();
-        row.style.display = text.includes(term) ? '' : 'none';
-    });
-});
-// 5. Reload when the date changes, and on first page load
-dateInput.addEventListener('change', loadAttendance);
-checkLogin().then(data => {
-    if (data.loggedIn) {
-        loadAttendance();
-    } else {
-        window.location.href = 'login.html';
-    }
-});
-async function checkLogin() {
-    const res = await fetch('php/check_session.php');
-    return await res.json();
-}
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-    await fetch('php/logout.php');
-    window.location.href = 'login.html';
+// 8. Start
+dateInput.addEventListener('change', loadAttendance);
+authReady.then(session => {
+    if (session.loggedIn) loadAttendance();
 });
