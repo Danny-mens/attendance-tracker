@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+require 'auth.php';
+
 
 $data = json_decode(file_get_contents('php://input'), true);
 $id = (int)($data['id'] ?? 0);

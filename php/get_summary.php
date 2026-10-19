@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+require 'auth.php';
+
 
 $sql = "SELECT s.id, s.student_number, s.full_name,
         COALESCE(SUM(a.status = 'Present'), 0) AS present,

@@ -1,5 +1,6 @@
 <?php
 require 'db.php';
+require 'auth.php';
 
 $date = $_GET['date'] ?? date('Y-m-d');
 

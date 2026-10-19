@@ -147,4 +147,19 @@ document.getElementById('search').addEventListener('input', function () {
 });
 // 5. Reload when the date changes, and on first page load
 dateInput.addEventListener('change', loadAttendance);
-loadAttendance();
+checkLogin().then(data => {
+    if (data.loggedIn) {
+        loadAttendance();
+    } else {
+        window.location.href = 'login.html';
+    }
+});
+async function checkLogin() {
+    const res = await fetch('php/check_session.php');
+    return await res.json();
+}
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    await fetch('php/logout.php');
+    window.location.href = 'login.html';
+});
