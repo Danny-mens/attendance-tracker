@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports · AttendEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="reports" data-title="Reports">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">INSIGHTS</p>
+                    <h1>Attendance reports</h1>
+                    <p class="muted">Review attendance over any date range and export it.</p>
+                </div>
+                <button class="btn btn-secondary" id="export-btn" type="button">⬇ Export CSV</button>
+            </div>
+
+            <div id="message" hidden></div>
+
+            <section class="panel stack">
+                <form id="report-form" class="filters">
+                    <div class="filter-field">
+                        <label for="from">From</label>
+                        <input class="input" type="date" id="from" required>
+                    </div>
+                    <div class="filter-field">
+                        <label for="to">To</label>
+                        <input class="input" type="date" id="to" required>
+                    </div>
+                    <div class="filter-field">
+                        <label for="class-filter">Class</label>
+                        <select class="input" id="class-filter">
+                            <option value="0">All classes</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Run report</button>
+                </form>
+            </section>
+
+            <div class="stats-grid stack">
+                <div class="stat-card">
+                    <div class="stat-top"><span>Present</span><span class="stat-icon green">✓</span></div>
+                    <div class="stat-number" id="r-present">0</div>
+                    <div class="stat-foot">in this range</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-top"><span>Late</span><span class="stat-icon amber">◔</span></div>
+                    <div class="stat-number" id="r-late">0</div>
+                    <div class="stat-foot">in this range</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-top"><span>Absent</span><span class="stat-icon red">✕</span></div>
+                    <div class="stat-number" id="r-absent">0</div>
+                    <div class="stat-foot" id="r-excused">0 excused</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-top"><span>Attendance rate</span><span class="stat-icon indigo">%</span></div>
+                    <div class="stat-number" id="r-rate">—</div>
+                    <div class="stat-foot">excused days not counted</div>
+                </div>
+            </div>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Attendance records</h2>
+                        <p class="muted" id="r-count">Run a report to see records</p>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>STUDENT</th><th>CLASS</th><th>DATE</th><th>STATUS</th></tr>
+                        </thead>
+                        <tbody id="report-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/reports.js"></script>
+</body>
+</html>
