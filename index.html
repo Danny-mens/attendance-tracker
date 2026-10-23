@@ -23,9 +23,9 @@
                 <form id="student-form" class="filters">
                     <input class="input" type="text" id="student-number" placeholder="Student ID" required>
                     <input class="input" type="text" id="full-name" placeholder="Full name" required>
-                    <select class="input" id="class-id">
-    <option value="">No class</option>
-</select>
+                   <input class="input" type="text" id="class-name" list="class-suggestions" placeholder="Class (e.g. Level 200 IT)">
+<datalist id="class-suggestions"></datalist>
+   
                     <button class="btn btn-primary" type="submit">＋ Add student</button>
                 </form>
             </section>

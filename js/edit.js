@@ -4,7 +4,8 @@ const studentId = params.get('id');
 const editForm    = document.getElementById('edit-form');
 const numberInput = document.getElementById('student-number');
 const nameInput   = document.getElementById('full-name');
-const classSelect = document.getElementById('class-id');
+const classInput  = document.getElementById('class-name');
+const suggestions = document.getElementById('class-suggestions');
 const messageEl   = document.getElementById('message');
 
 function showMessage(text, isError = false) {
@@ -17,9 +18,8 @@ async function init() {
     const classes = await (await fetch('php/get_classes.php')).json();
     classes.forEach(c => {
         const option = document.createElement('option');
-        option.value = c.id;
-        option.textContent = c.class_name;
-        classSelect.appendChild(option);
+        option.value = c.class_name;
+        suggestions.appendChild(option);
     });
 
     const res = await fetch('php/get_student.php?id=' + encodeURIComponent(studentId));
@@ -31,7 +31,7 @@ async function init() {
     const s = await res.json();
     numberInput.value = s.student_number;
     nameInput.value = s.full_name;
-    classSelect.value = s.class_id || '';
+    classInput.value = s.class_name || '';
 }
 
 editForm.addEventListener('submit', async (e) => {
@@ -44,7 +44,7 @@ editForm.addEventListener('submit', async (e) => {
             id: studentId,
             student_number: numberInput.value,
             full_name: nameInput.value,
-            class_id: classSelect.value
+            class_name: classInput.value
         })
     });
     const data = await res.json();

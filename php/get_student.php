@@ -4,7 +4,10 @@ require 'auth.php';
 
 $id = (int)($_GET['id'] ?? 0);
 
-$stmt = $pdo->prepare('SELECT id, student_number, full_name, class_id FROM students WHERE id = ?');
+$stmt = $pdo->prepare('SELECT s.id, s.student_number, s.full_name, s.class_id, c.class_name
+                       FROM students s
+                       LEFT JOIN classes c ON c.id = s.class_id
+                       WHERE s.id = ?');
 $stmt->execute([$id]);
 $student = $stmt->fetch(PDO::FETCH_ASSOC);
 

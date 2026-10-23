@@ -7,7 +7,8 @@ const countEl     = document.getElementById('count');
 const saveBtn     = document.getElementById('save-btn');
 const markAllBtn  = document.getElementById('mark-all');
 const messageEl   = document.getElementById('message');
-const classSelect = document.getElementById('class-id');
+const classInput  = document.getElementById('class-name');
+const suggestions = document.getElementById('class-suggestions');
 const classFilter = document.getElementById('class-filter');
 
 
@@ -83,14 +84,22 @@ async function loadClassOptions() {
     const res = await fetch('php/get_classes.php');
     const classes = await res.json();
 
+    const selected = classFilter.value;   // remember the chosen filter
+    classFilter.innerHTML = '<option value="0">All classes</option>';
+    suggestions.innerHTML = '';
+
     classes.forEach(c => {
-        [classSelect, classFilter].forEach(select => {
-            const option = document.createElement('option');
-            option.value = c.id;
-            option.textContent = c.class_name;
-            select.appendChild(option);
-        });
+        const filterOption = document.createElement('option');
+        filterOption.value = c.id;
+        filterOption.textContent = c.class_name;
+        classFilter.appendChild(filterOption);
+
+        const suggestion = document.createElement('option');
+        suggestion.value = c.class_name;
+        suggestions.appendChild(suggestion);
     });
+
+    classFilter.value = selected;
 }
 
 // 1. Load students and their status for the selected date
@@ -191,7 +200,7 @@ studentForm.addEventListener('submit', async (e) => {
        body: JSON.stringify({
     student_number: document.getElementById('student-number').value,
     full_name: document.getElementById('full-name').value,
-    class_id: classSelect.value
+    class_name: classInput.value
 })
     });
     const data = await res.json();
@@ -199,6 +208,7 @@ studentForm.addEventListener('submit', async (e) => {
     if (res.ok) {
         studentForm.reset();
         showMessage('Student added.');
+        loadClassOptions();
         loadAttendance();
     } else {
         showMessage(data.error, true);
