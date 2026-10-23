@@ -6,3 +6,5 @@ if (!isset($_SESSION['user_id'])) {
     echo json_encode(['error' => 'Not logged in']);
     exit;
 }
+
+$userId = (int)$_SESSION['user_id'];   // every query filters by this id

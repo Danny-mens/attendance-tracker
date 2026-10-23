@@ -9,10 +9,10 @@ $sql = "SELECT s.id, s.student_number, s.full_name, s.class_id, c.class_name, a.
         FROM students s
         LEFT JOIN classes c ON c.id = s.class_id
         LEFT JOIN attendance a ON a.student_id = s.id AND a.attendance_date = ?
-        WHERE (? = 0 OR s.class_id = ?)
+        WHERE s.user_id = ? AND (? = 0 OR s.class_id = ?)
         ORDER BY s.full_name";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute([$date, $classId, $classId]);
+$stmt->execute([$date, $userId, $classId, $classId]);
 
 echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));

@@ -46,8 +46,8 @@ const NAV_LINKS = [
                 window.location.href = 'login.html';
                 return session;
             }
-            document.getElementById('user-name').textContent = session.username;
-            document.getElementById('user-avatar').textContent = session.username.slice(0, 2).toUpperCase();
-            return session;
+            const shown = session.name || session.username;
+document.getElementById('user-name').textContent = shown;
+document.getElementById('user-avatar').textContent = shown.slice(0, 2).toUpperCase();
         });
 })();

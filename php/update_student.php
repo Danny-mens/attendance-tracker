@@ -22,11 +22,20 @@ if (strlen($className) > 80) {
     exit;
 }
 
+// Only the owner may edit a student
+$stmt = $pdo->prepare('SELECT id FROM students WHERE id = ? AND user_id = ?');
+$stmt->execute([$id, $userId]);
+if (!$stmt->fetchColumn()) {
+    http_response_code(404);
+    echo json_encode(['error' => 'Student not found.']);
+    exit;
+}
+
 try {
     $pdo->beginTransaction();
-    $classId = class_id_for($pdo, $className);
-    $stmt = $pdo->prepare('UPDATE students SET student_number = ?, full_name = ?, class_id = ? WHERE id = ?');
-    $stmt->execute([$number, $name, $classId, $id]);
+    $classId = class_id_for($pdo, $userId, $className);
+    $stmt = $pdo->prepare('UPDATE students SET student_number = ?, full_name = ?, class_id = ? WHERE id = ? AND user_id = ?');
+    $stmt->execute([$number, $name, $classId, $id, $userId]);
     $pdo->commit();
     echo json_encode(['success' => true]);
 } catch (PDOException $e) {

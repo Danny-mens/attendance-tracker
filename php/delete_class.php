@@ -10,8 +10,7 @@ if ($id <= 0) {
     echo json_encode(['error' => 'Invalid class id.']);
     exit;
 }
-
-$stmt = $pdo->prepare('DELETE FROM classes WHERE id = ?');
-$stmt->execute([$id]);
+$stmt = $pdo->prepare('DELETE FROM classes WHERE id = ? AND user_id = ?');
+$stmt->execute([$id, $userId]);
 
 echo json_encode(['success' => true]);

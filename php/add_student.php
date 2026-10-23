@@ -23,14 +23,14 @@ if (strlen($className) > 80) {
 
 try {
     $pdo->beginTransaction();
-    $classId = class_id_for($pdo, $className);
-    $stmt = $pdo->prepare('INSERT INTO students (student_number, full_name, class_id) VALUES (?, ?, ?)');
-    $stmt->execute([$number, $name, $classId]);
+    $classId = class_id_for($pdo, $userId, $className);
+    $stmt = $pdo->prepare('INSERT INTO students (user_id, student_number, full_name, class_id) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$userId, $number, $name, $classId]);
     $pdo->commit();
     echo json_encode(['success' => true]);
 } catch (PDOException $e) {
     if ($pdo->inTransaction()) {
-        $pdo->rollBack();   // a rejected student does not leave a new empty class behind
+        $pdo->rollBack();
     }
     if ($e->getCode() == 23000) {
         http_response_code(409);

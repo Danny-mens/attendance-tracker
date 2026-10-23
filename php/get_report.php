@@ -13,7 +13,7 @@ if (!valid_date($from) || !valid_date($to) || $from > $to) {
     exit;
 }
 
-$rows = fetch_report($pdo, $from, $to, $classId);
+$rows = fetch_report($pdo, $userId, $from, $to, $classId);
 
 $counts = ['Present' => 0, 'Late' => 0, 'Absent' => 0, 'Excused' => 0];
 foreach ($rows as $r) {

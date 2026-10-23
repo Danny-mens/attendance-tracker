@@ -9,10 +9,13 @@ $sql = "SELECT s.id, s.student_number, s.full_name,
         COALESCE(SUM(a.status = 'Excused'), 0) AS excused
         FROM students s
         LEFT JOIN attendance a ON a.student_id = s.id
+        WHERE s.user_id = ?
         GROUP BY s.id, s.student_number, s.full_name
         ORDER BY s.full_name";
 
-$rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$userId]);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($rows as &$r) {
     $counted = $r['present'] + $r['late'] + $r['absent'];   // excused days are not counted

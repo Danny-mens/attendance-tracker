@@ -13,8 +13,8 @@ if ($name === '') {
 }
 
 try {
-    $stmt = $pdo->prepare('INSERT INTO classes (class_name, level) VALUES (?, ?)');
-    $stmt->execute([$name, $level === '' ? null : $level]);
+    $stmt = $pdo->prepare('INSERT INTO classes (user_id, class_name, level) VALUES (?, ?, ?)');
+    $stmt->execute([$userId, $name, $level === '' ? null : $level]);
     echo json_encode(['success' => true]);
 } catch (PDOException $e) {
     if ($e->getCode() == 23000) {

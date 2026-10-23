@@ -12,8 +12,7 @@ if (!valid_date($from) || !valid_date($to) || $from > $to) {
     exit('Choose a valid date range.');
 }
 
-$rows = fetch_report($pdo, $from, $to, $classId);
-
+$rows = fetch_report($pdo, $userId, $from, $to, $classId);
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="attendance_' . $from . '_to_' . $to . '.csv"');
 
