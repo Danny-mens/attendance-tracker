@@ -1,7 +1,9 @@
 const NAV_LINKS = [
     { page: 'dashboard', href: 'dashboard.html', icon: '▦', label: 'Dashboard' },
     { page: 'attendance', href: 'index.html', icon: '✓', label: 'Attendance' },
+    { page: 'courses', href: 'courses.html', icon: '▣', label: 'Courses' },
     { page: 'classes', href: 'classes.html', icon: '▤', label: 'Classes' },
+    { page: 'import', href: 'import.html', icon: '⬆', label: 'Import' },
     { page: 'reports', href: 'reports.html', icon: '▥', label: 'Reports' }
 ];
 
@@ -47,7 +49,8 @@ const NAV_LINKS = [
                 return session;
             }
             const shown = session.name || session.username;
-document.getElementById('user-name').textContent = shown;
-document.getElementById('user-avatar').textContent = shown.slice(0, 2).toUpperCase();
+            document.getElementById('user-name').textContent = shown;
+            document.getElementById('user-avatar').textContent = shown.slice(0, 2).toUpperCase();
+            return session;
         });
 })();

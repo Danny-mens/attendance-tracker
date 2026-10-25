@@ -32,6 +32,10 @@
                         <input class="input" type="date" id="to" required>
                     </div>
                     <div class="filter-field">
+    <label for="course-filter">Course</label>
+    <select class="input" id="course-filter"><option value="0">All courses</option></select>
+</div>
+                    <div class="filter-field">
                         <label for="class-filter">Class</label>
                         <select class="input" id="class-filter">
                             <option value="0">All classes</option>
@@ -74,7 +78,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>STUDENT</th><th>CLASS</th><th>DATE</th><th>STATUS</th></tr>
+                            <tr><th>STUDENT</th><th>COURSE</th><th>CLASS</th><th>DATE</th><th>STATUS</th></tr>
                         </thead>
                         <tbody id="report-body"></tbody>
                     </table>

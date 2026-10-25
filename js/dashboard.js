@@ -1,3 +1,5 @@
+const courseFilter = document.getElementById('course-filter');
+
 function setText(id, value) {
     document.getElementById(id).textContent = value;
 }
@@ -110,7 +112,7 @@ function drawRecent(recent) {
     if (recent.length === 0) {
         const tr = document.createElement('tr');
         const td = makeCell('No attendance saved yet.');
-        td.colSpan = 4;
+        td.colSpan = 5;
         td.className = 'empty-state';
         tr.appendChild(td);
         body.appendChild(tr);
@@ -140,14 +142,13 @@ function drawRecent(recent) {
         badge.className = 'badge badge-' + r.status.toLowerCase();
         badge.textContent = r.status;
         statusTd.appendChild(badge);
-
-        tr.append(personTd, makeCell(r.class_name || '—'), makeCell(r.attendance_date), statusTd);
+tr.append(personTd, makeCell(r.course_code), makeCell(r.class_name || '\u2014'), makeCell(r.attendance_date), statusTd);
         body.appendChild(tr);
     });
 }
 
 async function loadDashboard() {
-    const res = await fetch('php/get_stats.php');
+const res = await fetch('php/get_stats.php?course_id=' + courseFilter.value);
     const s = await res.json();
 
     setText('today-label', new Date().toLocaleDateString('en-GB', {
@@ -155,7 +156,7 @@ async function loadDashboard() {
     }).toUpperCase());
 
     setText('stat-total', s.totalStudents);
-    setText('stat-classes', s.totalClasses + ' class(es)');
+    setText('stat-classes', s.totalClasses + ' class(es) \u00b7 ' + s.totalCourses + ' course(s)');
     setText('stat-present', s.present);
     setText('stat-present-foot', s.late + ' late');
     setText('stat-absent', s.absent);
@@ -168,6 +169,21 @@ async function loadDashboard() {
     drawRecent(s.recent);
 }
 
-authReady.then(session => {
-    if (session.loggedIn) loadDashboard();
+async function loadCourseOptions() {
+    const courses = await (await fetch('php/get_courses.php')).json();
+    courses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = c.course_code + ' \u00b7 ' + c.course_name;
+        courseFilter.appendChild(option);
+    });
+}
+
+courseFilter.addEventListener('change', loadDashboard);
+
+authReady.then(async session => {
+    if (session.loggedIn) {
+        await loadCourseOptions();
+        loadDashboard();
+    }
 });

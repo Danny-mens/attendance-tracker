@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course students · AttendEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="courses" data-title="Course students">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">ENROLLMENT</p>
+                    <h1 id="course-title">Course students</h1>
+                    <p class="muted">Tick the students who take this course, then save.</p>
+                </div>
+            </div>
+
+            <div id="message" hidden></div>
+
+            <section class="panel">
+                <div class="filters">
+                    <div class="filter-field">
+                        <label for="search">Search (name, ID or class)</label>
+                        <input class="input" id="search" placeholder="e.g. Level 200 IT">
+                    </div>
+                    <button class="btn btn-secondary" type="button" id="select-shown">Select shown</button>
+                    <button class="btn btn-ghost" type="button" id="clear-shown">Clear shown</button>
+                </div>
+
+                <p class="muted" id="count"></p>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th></th><th>STUDENT</th><th>CLASS</th></tr>
+                        </thead>
+                        <tbody id="enroll-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="form-actions">
+                    <a class="btn btn-secondary" href="courses.html">Back</a>
+                    <button class="btn btn-primary" id="save-btn" type="button">Save students</button>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/enroll.js"></script>
+</body>
+</html>

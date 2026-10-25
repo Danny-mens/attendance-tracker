@@ -1,3 +1,4 @@
+const courseFilter = document.getElementById('course-filter');
 const reportForm  = document.getElementById('report-form');
 const fromInput   = document.getElementById('from');
 const toInput     = document.getElementById('to');
@@ -35,8 +36,10 @@ function initials(name) {
 }
 
 function query() {
-    return 'from=' + fromInput.value + '&to=' + toInput.value + '&class_id=' + classFilter.value;
+    return 'from=' + fromInput.value + '&to=' + toInput.value +
+        '&class_id=' + classFilter.value + '&course_id=' + courseFilter.value;
 }
+
 
 function rangeIsValid() {
     return fromInput.value !== '' && toInput.value !== '' && fromInput.value <= toInput.value;
@@ -80,7 +83,7 @@ async function runReport() {
     if (data.rows.length === 0) {
         const tr = document.createElement('tr');
         const td = makeCell('No attendance saved in this range.');
-        td.colSpan = 4;
+        td.colSpan = 5;
         td.className = 'empty-state';
         tr.appendChild(td);
         reportBody.appendChild(tr);
@@ -111,7 +114,7 @@ async function runReport() {
         badge.textContent = r.status;
         statusTd.appendChild(badge);
 
-        tr.append(personTd, makeCell(r.class_name || '—'), makeCell(r.attendance_date), statusTd);
+     tr.append(personTd, makeCell(r.course_code), makeCell(r.class_name || '\u2014'), makeCell(r.attendance_date), statusTd);
         reportBody.appendChild(tr);
     });
 }
@@ -129,9 +132,20 @@ exportBtn.addEventListener('click', () => {
     window.location.href = 'php/export_csv.php?' + query();
 });
 
+async function loadCourseOptions() {
+    const courses = await (await fetch('php/get_courses.php')).json();
+    courses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = c.course_code + ' \u00b7 ' + c.course_name;
+        courseFilter.appendChild(option);
+    });
+}
+
 authReady.then(session => {
     if (session.loggedIn) {
         loadClassOptions();
+        loadCourseOptions();
         runReport();
     }
 });

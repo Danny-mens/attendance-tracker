@@ -9,14 +9,15 @@ const markAllBtn  = document.getElementById('mark-all');
 const messageEl   = document.getElementById('message');
 const classInput  = document.getElementById('class-name');
 const suggestions = document.getElementById('class-suggestions');
-const classFilter = document.getElementById('class-filter');
-
+const classFilter  = document.getElementById('class-filter');
+const courseFilter = document.getElementById('course-filter');
 
 dateInput.value = new Date().toISOString().split('T')[0];
 
 function showMessage(text, isError = false) {
     messageEl.textContent = text;
     messageEl.className = isError ? 'msg-error' : 'msg-success';
+    messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function initials(name) {
@@ -28,6 +29,15 @@ function makeCell(text) {
     const td = document.createElement('td');
     td.textContent = text;
     return td;
+}
+
+function messageRow(text) {
+    const tr = document.createElement('tr');
+    const td = makeCell(text);
+    td.colSpan = 4;
+    td.className = 'empty-state';
+    tr.appendChild(td);
+    return tr;
 }
 
 function personCell(name, number) {
@@ -56,7 +66,7 @@ function statusCell(student) {
     const group = document.createElement('div');
     group.className = 'status-options';
 
-   ['Present', 'Absent', 'Late', 'Excused'].forEach(value =>  {
+    ['Present', 'Absent', 'Late', 'Excused'].forEach(value => {
         const label = document.createElement('label');
         label.className = 'status-option status-' + value.toLowerCase();
         if (student.status === value) label.classList.add('selected');
@@ -80,11 +90,27 @@ function statusCell(student) {
     td.appendChild(group);
     return td;
 }
-async function loadClassOptions() {
-    const res = await fetch('php/get_classes.php');
-    const classes = await res.json();
 
-    const selected = classFilter.value;   // remember the chosen filter
+async function loadCourseOptions() {
+    const courses = await (await fetch('php/get_courses.php')).json();
+    let saved = null;
+    try { saved = localStorage.getItem('course'); } catch (e) {}
+
+    courseFilter.innerHTML = '';
+    courses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = c.course_code + ' \u00b7 ' + c.course_name;
+        courseFilter.appendChild(option);
+    });
+
+    if (courses.some(c => String(c.id) === saved)) courseFilter.value = saved;
+}
+
+async function loadClassOptions() {
+    const classes = await (await fetch('php/get_classes.php')).json();
+
+    const selected = classFilter.value;
     classFilter.innerHTML = '<option value="0">All classes</option>';
     suggestions.innerHTML = '';
 
@@ -99,25 +125,28 @@ async function loadClassOptions() {
         suggestions.appendChild(suggestion);
     });
 
-    classFilter.value = selected;
+    classFilter.value = selected || '0';
 }
 
-// 1. Load students and their status for the selected date
+// 1. Load the students of the chosen course, with their status for the date
 async function loadAttendance() {
     loadSummary();
-    const res = await fetch('php/get_attendance.php?date=' + dateInput.value + '&class_id=' + classFilter.value);
+    tableBody.innerHTML = '';
+
+    if (!courseFilter.value) {
+        countEl.textContent = '';
+        tableBody.appendChild(messageRow('You have no course yet. Create one on the Courses page.'));
+        return;
+    }
+
+    const res = await fetch('php/get_attendance.php?date=' + dateInput.value +
+        '&course_id=' + courseFilter.value + '&class_id=' + classFilter.value);
     const students = await res.json();
 
-    tableBody.innerHTML = '';
     countEl.textContent = students.length + ' student(s)';
 
     if (students.length === 0) {
-        const tr = document.createElement('tr');
-        const td = makeCell('No students found.');
-        td.colSpan = 4;
-        td.className = 'empty-state';
-        tr.appendChild(td);
-        tableBody.appendChild(tr);
+        tableBody.appendChild(messageRow('No students in this course yet. Add one above, or choose students on the Courses page.'));
         return;
     }
 
@@ -133,7 +162,7 @@ async function loadAttendance() {
             badge.textContent = s.class_name;
             classCell.appendChild(badge);
         } else {
-            classCell.textContent = '—';
+            classCell.textContent = '\u2014';
         }
 
         const actionCell = document.createElement('td');
@@ -160,9 +189,10 @@ async function loadAttendance() {
 
     applySearch();
 }
-// 2. Summary table
+
+// 2. Summary table (for the chosen course)
 async function loadSummary() {
-    const res = await fetch('php/get_summary.php');
+    const res = await fetch('php/get_summary.php?course_id=' + (courseFilter.value || 0));
     const rows = await res.json();
     summaryBody.innerHTML = '';
 
@@ -176,7 +206,7 @@ async function loadSummary() {
         badge.textContent = pct + '%';
         rate.appendChild(badge);
 
-       tr.append(personCell(r.full_name, r.student_number), makeCell(r.present), makeCell(r.late), makeCell(r.absent), makeCell(r.excused), rate);
+        tr.append(personCell(r.full_name, r.student_number), makeCell(r.present), makeCell(r.late), makeCell(r.absent), makeCell(r.excused), rate);
         summaryBody.appendChild(tr);
     });
 }
@@ -190,28 +220,45 @@ function applySearch() {
 }
 searchInput.addEventListener('input', applySearch);
 
-// 4. Add a student
+// 4. Add a student (enrolled in the chosen course)
 studentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!courseFilter.value) {
+    showMessage('Create a course first, then add students to it.', true);
+    return;
+}
 
-    const res = await fetch('php/add_student.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({
-    student_number: document.getElementById('student-number').value,
-    full_name: document.getElementById('full-name').value,
-    class_name: classInput.value
-})
-    });
-    const data = await res.json();
+    try {
+        const res = await fetch('php/add_student.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                student_number: document.getElementById('student-number').value,
+                full_name: document.getElementById('full-name').value,
+                class_name: classInput.value,
+                course_id: courseFilter.value
+            })
+        });
 
-    if (res.ok) {
-        studentForm.reset();
-        showMessage('Student added.');
-        loadClassOptions();
-        loadAttendance();
-    } else {
-        showMessage(data.error, true);
+        const text = await res.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (err) {
+            showMessage('The server sent an unexpected reply. Press Ctrl+F5 and try again.', true);
+            return;
+        }
+
+        if (res.ok) {
+            studentForm.reset();
+            showMessage('Student added.');
+            loadClassOptions();
+            loadAttendance();
+        } else {
+            showMessage(data.error, true);
+        }
+    } catch (err) {
+        showMessage('Could not reach the server: ' + err.message, true);
     }
 });
 
@@ -239,6 +286,11 @@ markAllBtn.addEventListener('click', () => {
 
 // 7. Save attendance
 saveBtn.addEventListener('click', async () => {
+    if (!courseFilter.value) {
+        showMessage('Choose a course first.', true);
+        return;
+    }
+
     const records = [];
     tableBody.querySelectorAll('tr[data-id]').forEach(row => {
         const checked = row.querySelector('input:checked');
@@ -253,7 +305,7 @@ saveBtn.addEventListener('click', async () => {
     const res = await fetch('php/save_attendance.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: dateInput.value, records })
+        body: JSON.stringify({ date: dateInput.value, course_id: courseFilter.value, records })
     });
     const data = await res.json();
 
@@ -268,9 +320,14 @@ saveBtn.addEventListener('click', async () => {
 // 8. Start
 dateInput.addEventListener('change', loadAttendance);
 classFilter.addEventListener('change', loadAttendance);
+courseFilter.addEventListener('change', () => {
+    try { localStorage.setItem('course', courseFilter.value); } catch (e) {}
+    loadAttendance();
+});
 
-authReady.then(session => {
+authReady.then(async session => {
     if (session.loggedIn) {
+        await loadCourseOptions();
         loadClassOptions();
         loadAttendance();
     }

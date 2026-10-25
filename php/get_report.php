@@ -6,6 +6,7 @@ require 'report_query.php';
 $from    = $_GET['from'] ?? '';
 $to      = $_GET['to'] ?? '';
 $classId = (int)($_GET['class_id'] ?? 0);
+$courseId = (int)($_GET['course_id'] ?? 0);
 
 if (!valid_date($from) || !valid_date($to) || $from > $to) {
     http_response_code(400);
@@ -13,8 +14,7 @@ if (!valid_date($from) || !valid_date($to) || $from > $to) {
     exit;
 }
 
-$rows = fetch_report($pdo, $userId, $from, $to, $classId);
-
+$rows = fetch_report($pdo, $userId, $from, $to, $classId, $courseId);
 $counts = ['Present' => 0, 'Late' => 0, 'Absent' => 0, 'Excused' => 0];
 foreach ($rows as $r) {
     $counts[$r['status']]++;

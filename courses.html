@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses · AttendEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="courses" data-title="Courses">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">TEACHING</p>
+                    <h1>Courses</h1>
+                    <p class="muted">Create your courses and choose which students take each one.</p>
+                </div>
+            </div>
+
+            <div id="message" hidden></div>
+
+            <div class="two-column">
+                <section class="panel form-panel">
+                    <h2 class="section-title">Add course</h2>
+                    <form id="course-form">
+                        <div class="stack">
+                            <label for="course-code">Course code</label>
+                            <input class="input" id="course-code" required placeholder="e.g. BITM 409">
+                        </div>
+                        <div class="stack">
+                            <label for="course-name">Course name</label>
+                            <input class="input" id="course-name" required placeholder="e.g. E-Business">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit">＋ Add course</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-heading">
+                        <div>
+                            <h2>Your courses</h2>
+                            <p class="muted">Attendance is taken for one course at a time</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>COURSE</th><th>STUDENTS</th><th>ACTIONS</th></tr>
+                            </thead>
+                            <tbody id="course-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/courses.js"></script>
+</body>
+</html>

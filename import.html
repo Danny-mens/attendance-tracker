@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import students · AttendEase</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="import" data-title="Import students">
+<div class="app-shell">
+    <main class="main-area">
+        <div class="content">
+            <div class="page-heading">
+                <div>
+                    <p class="eyebrow">BULK ADD</p>
+                    <h1>Import students</h1>
+                    <p class="muted">Add many students to a course from a CSV file.</p>
+                </div>
+                <button class="btn btn-secondary" id="template-btn" type="button">⬇ Download template</button>
+            </div>
+
+            <div id="message" hidden></div>
+
+            <section class="panel stack">
+                <h2 class="section-title">1. Choose the course and the file</h2>
+                <div class="filters">
+                    <div class="filter-field">
+                        <label for="course">Add the students to this course</label>
+                        <select class="input" id="course"></select>
+                    </div>
+                    <div class="filter-field">
+                        <label for="csv-file">CSV file (Student ID, Full name, Class)</label>
+                        <input class="input" type="file" id="csv-file" accept=".csv,text/csv">
+                    </div>
+                </div>
+
+                <div class="filter-field">
+                    <label>If a student ID already exists</label>
+                    <label><input type="radio" name="mode" value="skip" checked> Skip: keep their details, but still add them to the course</label>
+                    <label><input type="radio" name="mode" value="update"> Update: replace their name and class with the file's</label>
+                </div>
+            </section>
+
+            <section class="panel" id="preview-card" hidden>
+                <div class="panel-heading">
+                    <div>
+                        <h2>2. Check the preview</h2>
+                        <p class="muted" id="summary"></p>
+                    </div>
+                    <button class="btn btn-primary" id="import-btn" type="button">Import</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>ROW</th><th>STUDENT ID</th><th>FULL NAME</th><th>CLASS</th><th>STATUS</th></tr>
+                        </thead>
+                        <tbody id="preview-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script src="js/layout.js"></script>
+<script src="js/import.js"></script>
+</body>
+</html>
