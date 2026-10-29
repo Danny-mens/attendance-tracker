@@ -14,7 +14,7 @@
                 <div>
                     <p class="eyebrow">BULK ADD</p>
                     <h1>Import students</h1>
-                    <p class="muted">Add many students to a course from a CSV file.</p>
+                    <p class="muted">Add many students to a class and a course from a CSV file.</p>
                 </div>
                 <button class="btn btn-secondary" id="template-btn" type="button">⬇ Download template</button>
             </div>
@@ -22,19 +22,25 @@
             <div id="message" hidden></div>
 
             <section class="panel stack">
-                <h2 class="section-title">1. Choose the course and the file</h2>
+                <h2 class="section-title">1. Choose where the students go</h2>
                 <div class="filters">
                     <div class="filter-field">
-                        <label for="course">Add the students to this course</label>
+                        <label for="course">Course</label>
                         <select class="input" id="course"></select>
                     </div>
                     <div class="filter-field">
-                        <label for="csv-file">CSV file (Student ID, Full name, Class)</label>
+                        <label for="class-name">Class (optional)</label>
+                        <input class="input" id="class-name" list="class-suggestions" placeholder="e.g. Level 200 IT">
+                        <datalist id="class-suggestions"></datalist>
+                    </div>
+                    <div class="filter-field">
+                        <label for="csv-file">CSV file (Student ID, Full name, Class optional)</label>
                         <input class="input" type="file" id="csv-file" accept=".csv,text/csv">
                     </div>
                 </div>
 
                 <div class="filter-field">
+                    <label><input type="checkbox" id="class-override"> Use the class above for every student, even if the file has a Class column</label>
                     <label>If a student ID already exists</label>
                     <label><input type="radio" name="mode" value="skip" checked> Skip: keep their details, but still add them to the course</label>
                     <label><input type="radio" name="mode" value="update"> Update: replace their name and class with the file's</label>

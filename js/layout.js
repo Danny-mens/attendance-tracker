@@ -13,7 +13,7 @@ const NAV_LINKS = [
 
     const sidebarHTML = `
     <aside class="sidebar" id="sidebar">
-        <a class="brand" href="index.html"><span class="brand-mark">A</span><span class="brand-name">AttendEase</span></a>
+        <a class="brand" href="index.html"><span class="brand-mark"><img src="images/logo.png" alt="AttendEase Logo"></span><span class="brand-name">AttendEase</span></a>
         <nav class="nav-list" aria-label="Main navigation">
             ${NAV_LINKS.map(l => `<a class="nav-link ${l.page === activePage ? 'active' : ''}" href="${l.href}"><span>${l.icon}</span><span>${l.label}</span></a>`).join('')}
         </nav>

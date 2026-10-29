@@ -1,17 +1,21 @@
-const courseSelect = document.getElementById('course');
-const fileInput    = document.getElementById('csv-file');
-const previewCard  = document.getElementById('preview-card');
-const previewBody  = document.getElementById('preview-body');
-const summaryEl    = document.getElementById('summary');
-const importBtn    = document.getElementById('import-btn');
-const messageEl    = document.getElementById('message');
+const courseSelect  = document.getElementById('course');
+const classInput    = document.getElementById('class-name');
+const classOverride = document.getElementById('class-override');
+const suggestions   = document.getElementById('class-suggestions');
+const fileInput     = document.getElementById('csv-file');
+const previewCard   = document.getElementById('preview-card');
+const previewBody   = document.getElementById('preview-body');
+const summaryEl     = document.getElementById('summary');
+const importBtn     = document.getElementById('import-btn');
+const messageEl     = document.getElementById('message');
 
 const ID_NAMES    = ['studentid', 'id', 'studentnumber', 'number', 'studentno', 'idnumber', 'indexnumber', 'index'];
 const NAME_NAMES  = ['fullname', 'name', 'studentname'];
 const CLASS_NAMES = ['class', 'classname', 'group', 'level'];
 
 const MAX_ROWS = 1000;
-let validRows = [];
+let items = [];       // every row read from the file
+let validRows = [];   // rows that can be imported
 
 function showMessage(text, isError = false) {
     messageEl.textContent = text;
@@ -78,7 +82,7 @@ function analyse(rows) {
     }
 
     const seen = new Set();
-    const items = [];
+    const list = [];
 
     rows.slice(1).forEach((r, i) => {
         const cells = r.map(c => c.trim());
@@ -89,30 +93,36 @@ function analyse(rows) {
             student_number: cells[idCol] || '',
             full_name: cells[nameCol] || '',
             class_name: classCol === -1 ? '' : (cells[classCol] || ''),
-            problem: ''
+            baseProblem: ''
         };
 
-        if (!item.student_number) item.problem = 'Missing student ID';
-        else if (!item.full_name) item.problem = 'Missing name';
-        else if (item.student_number.length > 20) item.problem = 'ID too long (20 characters at most)';
-        else if (item.full_name.length > 100) item.problem = 'Name too long (100 characters at most)';
-        else if (item.class_name.length > 80) item.problem = 'Class too long (80 characters at most)';
-        else if (seen.has(item.student_number)) item.problem = 'ID repeated in the file';
+        if (!item.student_number) item.baseProblem = 'Missing student ID';
+        else if (!item.full_name) item.baseProblem = 'Missing name';
+        else if (item.student_number.length > 20) item.baseProblem = 'ID too long (20 characters at most)';
+        else if (item.full_name.length > 100) item.baseProblem = 'Name too long (100 characters at most)';
+        else if (seen.has(item.student_number)) item.baseProblem = 'ID repeated in the file';
 
-        if (!item.problem) seen.add(item.student_number);
-        items.push(item);
+        if (!item.baseProblem) seen.add(item.student_number);
+        list.push(item);
     });
 
-    return { items };
+    return { items: list };
 }
 
-function renderPreview(items) {
+// The class a student will get: the typed class fills empty cells, or replaces the file's class if ticked
+function effectiveClass(item) {
+    const typed = classInput.value.trim();
+    if (typed && (classOverride.checked || !item.class_name)) return typed;
+    return item.class_name;
+}
+
+function renderPreview() {
     previewBody.innerHTML = '';
 
     items.slice(0, 200).forEach(item => {
         const tr = document.createElement('tr');
 
-        [item.line, item.student_number, item.full_name, item.class_name || '\u2014'].forEach(value => {
+        [item.line, item.student_number, item.full_name, item.final_class || '\u2014'].forEach(value => {
             const td = document.createElement('td');
             td.textContent = value;
             tr.appendChild(td);
@@ -129,7 +139,32 @@ function renderPreview(items) {
     });
 }
 
+// Works out the final class and problems of every row, then redraws the preview
+function refresh() {
+    if (items.length === 0) return;
+
+    items.forEach(item => {
+        item.final_class = effectiveClass(item);
+        item.problem = item.baseProblem ||
+            (item.final_class.length > 80 ? 'Class too long (80 characters at most)' : '');
+    });
+
+    validRows = items.filter(i => !i.problem);
+    const problems = items.length - validRows.length;
+
+    let text = items.length + ' row(s) read: ' + validRows.length + ' ready to import, ' +
+        problems + ' with problems (they will be skipped).';
+    if (items.length > 200) text += ' Only the first 200 rows are shown.';
+    summaryEl.textContent = text;
+
+    renderPreview();
+    importBtn.textContent = 'Import ' + validRows.length + ' student(s)';
+    importBtn.disabled = validRows.length === 0;
+    previewCard.hidden = false;
+}
+
 function resetPreview() {
+    items = [];
     validRows = [];
     previewCard.hidden = true;
     previewBody.innerHTML = '';
@@ -147,42 +182,30 @@ fileInput.addEventListener('change', async () => {
         return;
     }
 
-    const rows = parseCSV(await file.text());
-    const result = analyse(rows);
+    const result = analyse(parseCSV(await file.text()));
 
     if (result.error) {
         showMessage(result.error, true);
         return;
     }
 
-    const items = result.items;
-    validRows = items.filter(i => !i.problem);
-
-    if (validRows.length > MAX_ROWS) {
-        showMessage('That file has ' + validRows.length + ' students. Import at most ' + MAX_ROWS + ' at a time.', true);
-        validRows = [];
+    if (result.items.length > MAX_ROWS) {
+        showMessage('That file has ' + result.items.length + ' rows. Import at most ' + MAX_ROWS + ' at a time.', true);
         return;
     }
 
-    const problems = items.length - validRows.length;
-    let text = items.length + ' row(s) read: ' + validRows.length + ' ready to import, ' + problems + ' with problems (they will be skipped).';
-    if (items.length > 200) text += ' Only the first 200 rows are shown.';
-    summaryEl.textContent = text;
-
-    renderPreview(items);
-    importBtn.textContent = 'Import ' + validRows.length + ' student(s)';
-    importBtn.disabled = validRows.length === 0;
-    previewCard.hidden = false;
+    items = result.items;
+    refresh();
 });
 
+classInput.addEventListener('input', refresh);
+classOverride.addEventListener('change', refresh);
+
 importBtn.addEventListener('click', async () => {
-    if (!courseSelect.value) {
-        showMessage('Choose a course first.', true);
-        return;
-    }
     if (validRows.length === 0) return;
 
     const mode = document.querySelector('input[name="mode"]:checked').value;
+    const courseId = courseSelect.value;
     const courseName = courseSelect.options[courseSelect.selectedIndex].textContent;
     importBtn.disabled = true;
 
@@ -191,13 +214,13 @@ importBtn.addEventListener('click', async () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                course_id: courseSelect.value,
+                course_id: courseId,
                 mode: mode,
                 rows: validRows.map(r => ({
                     line: r.line,
                     student_number: r.student_number,
                     full_name: r.full_name,
-                    class_name: r.class_name
+                    class_name: r.final_class
                 }))
             })
         });
@@ -218,16 +241,20 @@ importBtn.addEventListener('click', async () => {
             return;
         }
 
-        let summary = 'Imported into ' + courseName + ': ' + data.added + ' added, ' +
-            data.updated + ' updated, ' + data.skipped + ' already existed (details left unchanged).';
+        let summary = (courseId === '0' ? 'Imported without a course: ' : 'Imported into ' + courseName + ': ') +
+            data.added + ' added, ' + data.updated + ' updated, ' + data.skipped + ' already existed (details left unchanged).';
         if (data.errors.length > 0) {
             summary += ' ' + data.errors.length + ' row(s) were not imported: ' +
                 data.errors.slice(0, 5).map(e => 'row ' + e.line + ' (' + e.message + ')').join(', ');
+        }
+        if (courseId === '0') {
+            summary += ' To enrol them, open Courses, click Students on a course, search their class and click Select shown.';
         }
 
         fileInput.value = '';
         resetPreview();
         showMessage(summary);
+        loadClasses();   // a new class may have been created
     } catch (err) {
         showMessage('Could not reach the server: ' + err.message, true);
         importBtn.disabled = false;
@@ -247,6 +274,11 @@ async function loadCourses() {
     const courses = await (await fetch('php/get_courses.php')).json();
     courseSelect.innerHTML = '';
 
+    const none = document.createElement('option');
+    none.value = '0';
+    none.textContent = 'No course (only add the students)';
+    courseSelect.appendChild(none);
+
     courses.forEach(c => {
         const option = document.createElement('option');
         option.value = c.id;
@@ -254,12 +286,23 @@ async function loadCourses() {
         courseSelect.appendChild(option);
     });
 
-    if (courses.length === 0) {
-        fileInput.disabled = true;
-        showMessage('Create a course first on the Courses page, then come back to import students.', true);
-    }
+    if (courses.length > 0) courseSelect.value = courses[0].id;
+}
+
+async function loadClasses() {
+    const classes = await (await fetch('php/get_classes.php')).json();
+    suggestions.innerHTML = '';
+
+    classes.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.class_name;
+        suggestions.appendChild(option);
+    });
 }
 
 authReady.then(session => {
-    if (session.loggedIn) loadCourses();
+    if (session.loggedIn) {
+        loadCourses();
+        loadClasses();
+    }
 });

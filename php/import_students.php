@@ -4,7 +4,7 @@ require 'auth.php';
 require 'class_helper.php';
 
 $data     = json_decode(file_get_contents('php://input'), true);
-$courseId = (int)($data['course_id'] ?? 0);
+$courseId = (int)($data['course_id'] ?? 0);   // 0 means: do not enrol, only add the students
 $mode     = ($data['mode'] ?? 'skip') === 'update' ? 'update' : 'skip';
 $rows     = $data['rows'] ?? [];
 
@@ -20,12 +20,14 @@ if (count($rows) > 1000) {
     exit;
 }
 
-$own = $pdo->prepare('SELECT id FROM courses WHERE id = ? AND user_id = ?');
-$own->execute([$courseId, $userId]);
-if (!$own->fetchColumn()) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Course not found.']);
-    exit;
+if ($courseId > 0) {
+    $own = $pdo->prepare('SELECT id FROM courses WHERE id = ? AND user_id = ?');
+    $own->execute([$courseId, $userId]);
+    if (!$own->fetchColumn()) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Course not found.']);
+        exit;
+    }
 }
 
 $find            = $pdo->prepare('SELECT id FROM students WHERE user_id = ? AND student_number = ?');
@@ -78,7 +80,9 @@ try {
             $result['added']++;
         }
 
-        $enrol->execute([$courseId, $studentId]);
+        if ($courseId > 0) {
+            $enrol->execute([$courseId, $studentId]);
+        }
     }
 
     $pdo->commit();
